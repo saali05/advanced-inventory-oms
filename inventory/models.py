@@ -51,16 +51,28 @@ class Inventory(models.Model):
         on_delete=models.CASCADE
     )
 
-    quantity = models.IntegerField(
-        default=0
+    physical_stock = models.PositiveIntegerField(
+        default=0,
+        help_text="Actual stock physically present in the warehouse."
     )
 
-    def __str__(self):
-        return f"{self.product.name} - {self.warehouse.name}"
+    reserved_stock = models.PositiveIntegerField(
+        default=0,
+        help_text="Stock reserved for confirmed orders."
+    )
+
+    available_stock = models.PositiveIntegerField(
+        default=0,
+        help_text="Stock available for new orders."
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['product', 'warehouse'], 
-                name='unique_product_warehouse'
+                fields=["product", "warehouse"],
+                name="unique_product_warehouse"
             )
         ]
+
+    def __str__(self):
+        return f"{self.product.name} - {self.warehouse.name}"

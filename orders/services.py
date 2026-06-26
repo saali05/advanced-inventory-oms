@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.db import transaction
 
 from inventory.models import Inventory
-from oms import inventory
 
 from .utils import generate_order_number
 from inventory.services import reserve_inventory
@@ -19,19 +18,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def check_inventory(product, warehouse, requested_quantity):
-    """
-    Check whether enough stock is available.
-    """
-    try:
-        inventory = Inventory.objects.get(
-            product=product,
-            warehouse=warehouse,
-        )
-    except Inventory.DoesNotExist:
-        return False
-
-    return inventory.available_stock >= requested_quantity
 
 def create_order(
     customer,
@@ -81,7 +67,8 @@ def create_order(
 
             unit_price = product.price
 
-            subtotal = product.price * quantity
+            subtotal = unit_price * quantity
+            unit_price=unit_price
 
             OrderItem.objects.create(
                 order=order, 
@@ -99,8 +86,9 @@ def create_order(
         order.save()
 
         logger.info(
-        "Order %s created successfully.",
-        order.order_number,
+            "rder %s created successfully with total %.2f",
+            order.order_number,
+            order.total_amount,
     )
     
         return order
